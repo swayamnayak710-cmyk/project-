@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Dealership Inventory System</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans">
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    function App() {
+      const [role, setRole] = useState('admin');
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
+      const [maxPrice, setMaxPrice] = useState(80000);
+
+      const [vehicles, setVehicles] = useState([
+        { id: 1, make: 'Tesla', model: 'Model 3', category: 'Electric', price: 42000, quantity: 3 },
+        { id: 2, make: 'Ford', model: 'Mustang', category: 'Sports', price: 55000, quantity: 0 },
+        { id: 3, make: 'Toyota', model: 'Camry', category: 'Sedan', price: 28000, quantity: 5 },
+        { id: 4, make: 'BMW', model: 'X5', category: 'SUV', price: 65000, quantity: 2 },
+      ]);
+
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [newVehicle, setNewVehicle] = useState({ make: '', model: '', category: 'SUV', price: 30000, quantity: 1 });
+
+      const handlePurchase = (id) => {
+        setVehicles(vehicles.map(v => v.id === id && v.quantity > 0 ? { ...v, quantity: v.quantity - 1 } : v));
+      };
+
+      const handleRestock = (id) => {
+        if (role !== 'admin') return;
+        setVehicles(vehicles.map(v => v.id === id ? { ...v, quantity: v.quantity + 5 } : v));
+      };
+
+      const handleAddSubmit = (e) => {
+        e.preventDefault();
+        setVehicles([...vehicles, { id: vehicles.length + 1, ...newVehicle, price: Number(newVehicle.price), quantity: Number(newVehicle.quantity) }]);
+        setShowAddModal(false);
+        setNewVehicle({ make: '', model: '', category: 'SUV', price: 30000, quantity: 1 });
+      };
+
+      const filteredVehicles = vehicles.filter(v => {
+        const matchesSearch = v.make.toLowerCase().includes(searchQuery.toLowerCase()) || v.model.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = selectedCategory === 'All' || v.category === selectedCategory;
+        const matchesPrice = v.price <= maxPrice;
+        return matchesSearch && matchesCategory && matchesPrice;
+      });
+
+      return (
+        <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
+          <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">🚗</span>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-4
